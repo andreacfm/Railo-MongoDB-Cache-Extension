@@ -72,12 +72,12 @@ public class MongoDBCacheDocument {
 		return dbObject.getString("timeIdle");
 	}
 
-	public void setHits(int value) {
+	public void setHits(String value) {
 		dbObject.put("hits",value);
 	}
 	
-	public int getHits(){
-		int hits = Integer.parseInt(dbObject.getString("hits"));
+	public String getHits(){
+		String hits = dbObject.getString("hits");
 		return hits;
 	}
 
@@ -91,6 +91,12 @@ public class MongoDBCacheDocument {
 
 	public BasicDBObject getDbObject(){
 		return dbObject;
+	}
+	
+	public void addHit(){
+		int hits = Integer.parseInt(getHits());
+		hits++;
+		setHits(Integer.toString(hits));		
 	}
 
 

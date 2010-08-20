@@ -1,6 +1,7 @@
 package railo.extension.io.cache.mongodb;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.bcel.generic.ISHL;
@@ -16,6 +17,7 @@ import railo.commons.io.cache.Cache;
 import railo.commons.io.cache.CacheEntry;
 import railo.commons.io.cache.CacheEntryFilter;
 import railo.commons.io.cache.CacheKeyFilter;
+import railo.commons.io.cache.exp.CacheException;
 import railo.loader.engine.CFMLEngine;
 import railo.loader.engine.CFMLEngineFactory;
 import railo.runtime.config.Config;
@@ -81,26 +83,56 @@ public class MongoDBCache implements Cache{
 
 	@Override
 	public List entries() {
-		DBCollection coll = db.getCollection(collectionName);
+		List result = new ArrayList<CacheEntry>();
+		DBCursor cur = listAll();
 		
-		return null;
+		if(cur.count() > 0){
+			while(cur.hasNext()){
+				MongoDBCacheDocument doc = (MongoDBCacheDocument) cur.next();
+				result.add(new MongoDBCacheEntry(doc));
+			}			
+		}
+		
+		return result;
 	}
 
 	@Override
-	public List entries(CacheKeyFilter arg0) {
-		// TODO Auto-generated method stub
-		return null;
+	public List entries(CacheKeyFilter filter) {
+		List result = new ArrayList<CacheEntry>();
+		DBCursor cur = listAll();
+		
+		if(cur.count() > 0){
+			while(cur.hasNext()){
+				MongoDBCacheDocument doc = (MongoDBCacheDocument) cur.next();
+				if(filter.accept(doc.getKey())){
+					result.add(new MongoDBCacheEntry(doc));	
+				}
+			}			
+		}		
+		return result;
 	}
 
 	@Override
-	public List entries(CacheEntryFilter arg0) {
-		// TODO Auto-generated method stub
-		return null;
+	public List entries(CacheEntryFilter filter) {
+		List result = new ArrayList<CacheEntry>();
+		DBCursor cur = listAll();
+		
+		if(cur.count() > 0){
+			while(cur.hasNext()){
+				MongoDBCacheDocument doc = (MongoDBCacheDocument) cur.next();
+				MongoDBCacheEntry entry = new MongoDBCacheEntry(doc);
+				if(filter.accept(entry)){
+					result.add(entry);	
+				}
+			}			
+		}		
+		return result;
 	}
 
 	@Override
-	public MongoDBCacheEntry getCacheEntry(String key) throws IOException {
+	public MongoDBCacheEntry getCacheEntry(String key) throws CacheException {
 		DBCollection coll = db.getCollection(collectionName);
+		hits++;
 		BasicDBObject query = new BasicDBObject();
         query.put("key", key.toLowerCase());
         //if doc exists but is invalid flush it before read
@@ -108,17 +140,31 @@ public class MongoDBCache implements Cache{
         DBCursor cur = coll.find(query);
         
         if(cur.count() > 0){
-        	return new MongoDBCacheEntry(new MongoDBCacheDocument((BasicDBObject) cur.next()));	
+        	MongoDBCacheDocument doc = new MongoDBCacheDocument((BasicDBObject) cur.next());
+        	doc.addHit();
+        	//update the statistic and persist
+        	save(doc);
+        	return new MongoDBCacheEntry(doc);	
         }
-        
-        throw(new IOException("The document with key [" + key  +"] has not been found int this cache."));
+        misses++;
+        throw(new CacheException("The document with key [" + key  +"] has not been found int this cache."));
         
  	}
 
 	@Override
-	public CacheEntry getCacheEntry(String arg0, CacheEntry arg1) {
-		// TODO Auto-generated method stub
-		return null;
+	public CacheEntry getCacheEntry(String key, CacheEntry defaultValue) {
+		try{
+			MongoDBCacheEntry entry = getCacheEntry(key);
+			return entry;
+		}catch(CacheException e){
+			MongoDBCacheDocument doc = new MongoDBCacheDocument(new BasicDBObject());
+			try{
+				doc.setData(func.serialize(defaultValue.getValue()));
+			}catch(PageException px){
+				px.printStackTrace();
+			}
+			return new MongoDBCacheEntry(doc);
+		}
 	}
 
 	@Override
@@ -128,19 +174,24 @@ public class MongoDBCache implements Cache{
 	}
 
 	@Override
-	public Object getValue(String key) throws IOException {
-		return null;
-	}
-
-	@Override
-	public Object getValue(String key, Object arg1) {
+	public Object getValue(String key) throws CacheException {
 		try{
 			MongoDBCacheEntry entry = getCacheEntry(key);
 			Object result = entry.getValue();
 			return  result;			
-		}catch(IOException e){
+		}catch(CacheException e){
 			e.printStackTrace();
 			return null;
+		}
+	}
+
+	@Override
+	public Object getValue(String key, Object defaultValue){
+		try{
+			Object value = getValue(key);
+			return value;	
+		}catch(CacheException e){
+			return defaultValue;
 		}
 	}
 
@@ -188,10 +239,9 @@ public class MongoDBCache implements Cache{
 			
 			doc.setData(func.serialize(value));
 			doc.setCreatedOn(created.toString());
-			doc.setLastAccessed(created.toString());
-			doc.setLastUpdated(created.toString());
 			doc.setTimeIdle(timeIdle.toString());
 			doc.setLifeSpan(span.toString());
+			doc.setHits("0");
 			
 			Long expires = span + created;
 			if(span == 0){
@@ -281,15 +331,26 @@ public class MongoDBCache implements Cache{
 	
 	private void save(MongoDBCacheDocument doc){
 		DBCollection coll = db.getCollection(collectionName);
-		Long created = System.currentTimeMillis();
-		BasicDBObject query = new BasicDBObject("key",doc.getKey());
-		//check if doc exists
-		DBCursor cur = coll.find(query);
-		if(cur.count() > 0){
-			coll.update(doc.getDbObject(), cur.next());
-		}else{
-			coll.insert(doc.getDbObject());
-		}
+		
+		Long now = System.currentTimeMillis();
+		
+		doc.setLastAccessed(now.toString());
+		doc.setLastUpdated(now.toString());	
+		doc.addHit();
+		/*
+		 *  very atomic updated. Just the changed values are sent to db.
+		 *  If the doc do not exists is inserted.
+		 */
+		BasicDBObject q = new BasicDBObject("key",doc.getKey());
+		coll.update(q, doc.getDbObject(),true,false);
+	}
+	
+	private DBCursor listAll(){
+		DBCollection coll = db.getCollection(collectionName);
+		// remove invalid docs
+		flushInvalid(new BasicDBObject());
+		return coll.find();
+		
 	}
 	
 }

@@ -4,6 +4,8 @@ import java.util.Date;
 
 import railo.commons.io.cache.CacheEntry;
 import railo.extension.util.Functions;
+import railo.loader.engine.CFMLEngine;
+import railo.loader.engine.CFMLEngineFactory;
 import railo.runtime.exp.PageException;
 import railo.runtime.type.Struct;
 
@@ -24,8 +26,9 @@ public class MongoDBCacheEntry implements CacheEntry {
 
 	@Override
 	public Struct getCustomInfo() {
-		// TODO Auto-generated method stub
-		return null;
+		Struct metadata = CFMLEngineFactory.getInstance().getCreationUtil().createStruct();
+		metadata.setEL("hits", hitCount());
+		return metadata;
 	}
 
 	@Override
@@ -47,7 +50,8 @@ public class MongoDBCacheEntry implements CacheEntry {
 
 	@Override
 	public int hitCount() {
-		return doc.getHits();
+		String hits = doc.getHits();
+		return Integer.parseInt(doc.getHits());
 	}
 
 	@Override
