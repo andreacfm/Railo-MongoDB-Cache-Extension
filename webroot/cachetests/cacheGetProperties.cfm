@@ -1,7 +1,7 @@
 <cflock scope="server" timeout="1">
 
 
-	<cfset cacheName="couchCache">
+	<cfset cacheName="mongotest">
 	<cfset cacheRemove(arrayToList(cacheGetAllIds()))>
 	
 	<cfset cachePut('abc','123')>

@@ -41,14 +41,9 @@
     <cfcatch></cfcatch>
 </cftry>
 
-
-
 <cfcache action="put" id="susi" value="Susanne">
 <cfcache action="get" id="susi" name="s" metadata="smd">
 <cfcache action="get" id="peter" name="p" metadata="pmd">
-<cfdump var="#smd#">
-<cfdump var="#pdm#">
-<cfabort>
 
 <cf_valueEquals left="#isDefined('s')#" right="true">
 <cf_valueEquals left="#isDefined('p')#" right="false">

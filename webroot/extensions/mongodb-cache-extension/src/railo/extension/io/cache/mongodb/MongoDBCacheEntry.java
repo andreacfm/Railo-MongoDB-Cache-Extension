@@ -27,7 +27,9 @@ public class MongoDBCacheEntry implements CacheEntry {
 	@Override
 	public Struct getCustomInfo() {
 		Struct metadata = CFMLEngineFactory.getInstance().getCreationUtil().createStruct();
-		metadata.setEL("hits", hitCount());
+		if(doc.getId() != null){
+			metadata.setEL("hits", hitCount());			
+		}
 		return metadata;
 	}
 
@@ -50,8 +52,8 @@ public class MongoDBCacheEntry implements CacheEntry {
 
 	@Override
 	public int hitCount() {
-		String hits = doc.getHits();
-		return Integer.parseInt(doc.getHits());
+		int hits = doc.getHits();
+		return hits;
 	}
 
 	@Override
@@ -76,7 +78,6 @@ public class MongoDBCacheEntry implements CacheEntry {
 
 	@Override
 	public long size() {
-		// TODO Auto-generated method stub
 		return 0;
 	}
 

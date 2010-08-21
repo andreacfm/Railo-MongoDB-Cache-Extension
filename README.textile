@@ -3,6 +3,27 @@ Copyright (c) 2010 Railo Technologies. All rights reserved
 
 TODO:
 ----------
-* verify why metadata is failing
 * add option to persist between server restart
 * verify hits
+
+BUILD:
+----------
+Add jetty to the project root.
+Add a file called unames.xml in /webroot/extensions/:
+
+<?xml version="1.0" encoding="iso-8859-1"?>
+<config>
+	<server>
+		<password>andrea</password>
+	</server>
+</config>
+
+Place the password used in the railo server used for test.
+
+
+TEST:
+----------
+After installing the extension create 2 cache from MongoDbDriver:
+* mongotest default for objects
+* mongotest_template default for templates
+ 

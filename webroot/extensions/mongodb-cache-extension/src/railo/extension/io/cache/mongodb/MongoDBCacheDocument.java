@@ -4,13 +4,10 @@ import com.mongodb.BasicDBObject;
 
 public class MongoDBCacheDocument {
 
-	private String id = "";
 	private BasicDBObject dbObject;
-	private Long expires;
 	
 	public MongoDBCacheDocument(BasicDBObject dbObject){
 		this.dbObject = dbObject;
-		this.id = getId();
 	}
 
 	public String getId(){
@@ -72,12 +69,12 @@ public class MongoDBCacheDocument {
 		return dbObject.getString("timeIdle");
 	}
 
-	public void setHits(String value) {
+	public void setHits(int value) {
 		dbObject.put("hits",value);
 	}
 	
-	public String getHits(){
-		String hits = dbObject.getString("hits");
+	public int getHits(){
+		int hits = dbObject.getInt("hits",0);
 		return hits;
 	}
 
@@ -94,9 +91,9 @@ public class MongoDBCacheDocument {
 	}
 	
 	public void addHit(){
-		int hits = Integer.parseInt(getHits());
+		int hits = getHits();
 		hits++;
-		setHits(Integer.toString(hits));		
+		setHits(hits);		
 	}
 
 
