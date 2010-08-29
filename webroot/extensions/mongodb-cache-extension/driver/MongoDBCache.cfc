@@ -29,7 +29,25 @@
 					required=true,
 					description="The name of the collection in the MongoDb database that will be used to store the data.",
 					type="text"
-				)					
+				),
+										
+			field(	displayName="Persists over server restart",
+					name="persist",
+					defaultValue="",
+					required=true,
+					description="The name of the collection in the MongoDb database that will be used to store the data.",
+					type="checkbox"
+				),
+
+			field(	displayName="Persists over server restart",
+					name="persist",
+					values="true,false",	
+					defaultValue=false,
+					required=true,
+					description="",
+					type="radio"
+				)								
+
 		)>
 
 	<cffunction name="getClass" returntype="string">

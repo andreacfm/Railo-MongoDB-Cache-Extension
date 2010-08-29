@@ -33,6 +33,7 @@ public class MongoDBCache implements Cache{
 	private int port = 27017;
 	private String database = "";
 	private String collectionName = "";
+	private Boolean persists = false;
 	//Mongo Instance
 	private Mongo mongo;
 	private DB db;
@@ -56,9 +57,12 @@ public class MongoDBCache implements Cache{
 			this.mongo = new Mongo(host,port);
 			this.db = mongo.getDB(database);
 			this.coll = db.getCollection(collectionName);
+			this.persists = caster.toBoolean(arguments.get("persists"));
 			
-			//clean the collection on startup
-			coll.drop();
+			//clean the collection on startup if required
+			if(!persists){
+				coll.drop();				
+			}
 			this.coll = db.getCollection(collectionName);
 			
 		} catch (Exception e) {
