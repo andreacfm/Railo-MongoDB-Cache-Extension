@@ -3,7 +3,6 @@ Copyright (c) 2010 Railo Technologies. All rights reserved
 
 h4. TODO:
 
-* add option to persist between server restart
 * verify hits
 
 h4. BUILD:
