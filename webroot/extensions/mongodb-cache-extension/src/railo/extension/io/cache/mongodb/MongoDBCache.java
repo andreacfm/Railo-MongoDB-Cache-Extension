@@ -2,16 +2,21 @@ package railo.extension.io.cache.mongodb;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.apache.bcel.generic.ISHL;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
+import com.mongodb.DBAddress;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.Mongo;
+import com.mongodb.MongoException;
+import com.mongodb.MongoOptions;
+import com.mongodb.ServerAddress;
 
 import railo.commons.io.cache.Cache;
 import railo.commons.io.cache.CacheEntry;
@@ -30,7 +35,6 @@ public class MongoDBCache implements Cache{
 
 	private String cacheName = "";
 	private String host = "";
-	private int port = 27017;
 	private String database = "";
 	private String collectionName = "";
 	private Boolean persists = false;
@@ -39,6 +43,8 @@ public class MongoDBCache implements Cache{
 	private DB db;
 	private DBCollection coll;
 	private Functions func = new Functions();
+	private MongoOptions opts = new MongoOptions();
+	private List<ServerAddress> addr = new ArrayList<ServerAddress>();
 	
 	//counters
 	private int hits = 0;
@@ -50,12 +56,26 @@ public class MongoDBCache implements Cache{
 		Cast caster = engine.getCastUtil();
 	
 		try {
-			this.host = caster.toString(arguments.get("host"));
-			this.port = caster.toIntValue(arguments.get("port"));
+			//options
+			opts.connectionsPerHost = caster.toIntValue(arguments.get("connectionsPerHost"));
+					
+			for(int i=1; i < 2; i++){
+				String host = "host" + i;
+				if(arguments.containsKey(host)){
+					addr.add(new ServerAddress(caster.toString(arguments.get(host))));
+				}
+			}
+			
+			//create mongo instance
+			try{
+				this.mongo = new Mongo(addr,opts);
+			}catch(MongoException e){
+				e.printStackTrace();
+			}
+			
 			this.database = caster.toString(arguments.get("database"));
-			this.collectionName = caster.toString(arguments.get("collection"));
-			this.mongo = new Mongo(host,port);
 			this.db = mongo.getDB(database);
+			this.collectionName = caster.toString(arguments.get("collection"));
 			this.coll = db.getCollection(collectionName);
 			this.persists = caster.toBoolean(arguments.get("persists"));
 			

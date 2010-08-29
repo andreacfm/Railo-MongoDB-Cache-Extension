@@ -1,20 +1,12 @@
 <cfcomponent extends="Cache">
     <cfset fields=array(
 			field(	displayName="Server Host",
-					name="host",
-					defaultValue="localhost",
+					name="host1",
+					defaultValue="localhost:27017",
 					required=true,
-					description="The host that the MongoDB server is running on",
+					description="The host that the MongoDB server is running on. Ex: localhost:27017 ",
 					type="text"
 				),
-			field(	displayName="Server Port",
-					name="port",
-					defaultValue="27017",
-					required=true,
-					description="The port that the MongoDB server is running on",
-					type="text"
-				),
-					
 			field(	displayName="Database",
 					name="database",
 					defaultValue="",
@@ -31,12 +23,12 @@
 					type="text"
 				),
 										
-			field(	displayName="Persists over server restart",
-					name="persist",
-					defaultValue="",
+			field(	displayName="Max connection per host",
+					name="connectionsPerHost",
+					defaultValue="10",
 					required=true,
-					description="The name of the collection in the MongoDb database that will be used to store the data.",
-					type="checkbox"
+					description="The max number of connection allowed per host. The exceeding connection will be queued.",
+					type="text"
 				),
 
 			field(	displayName="Persists over server restart",
@@ -46,8 +38,55 @@
 					required=true,
 					description="",
 					type="radio"
-				)								
+				),								
 
+			field(	displayName="Replica Set 1",
+					name="host2",
+					defaultValue="",
+					required=false,
+					description="Replica set node Ex: localhost:27018",
+					type="text"
+				),								
+
+			field(	displayName="Replica Set 2",
+					name="host3",
+					defaultValue="",
+					required=false,
+					description="",
+					type="text"
+				),								
+
+			field(	displayName="Replica Set 3",
+					name="host4",
+					defaultValue="",
+					required=false,
+					description="",
+					type="text"
+				),								
+
+			field(	displayName="Replica Set 4",
+					name="host5",
+					defaultValue="",
+					required=false,
+					description="",
+					type="text"
+				),								
+
+			field(	displayName="Replica Set 5",
+					name="host6",
+					defaultValue="",
+					required=false,
+					description="",
+					type="text"
+				),								
+
+			field(	displayName="Replica Set 6",
+					name="host7",
+					defaultValue="",
+					required=false,
+					description="",
+					type="text"
+				)
 		)>
 
 	<cffunction name="getClass" returntype="string">

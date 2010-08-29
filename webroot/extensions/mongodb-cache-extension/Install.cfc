@@ -5,7 +5,7 @@
 		variables.id = "railo.extension.io.cache.MongoDbCache";
 		variables.jar = "MongoDBCache.jar"
 		variables.driver = "MongoDBCache.cfc"
-		variables.jars = "#variables.jar#,mongo-2.0.jar";
+		variables.jars = "#variables.jar#,mongo.jar,mongo-java-driver.txt";
 	</cfscript>
     
     <cffunction name="validate" returntype="void" output="no"
