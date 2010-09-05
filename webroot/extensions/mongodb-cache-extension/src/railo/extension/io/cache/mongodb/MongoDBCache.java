@@ -38,10 +38,11 @@ public class MongoDBCache implements Cache{
 	private String database = "";
 	private String collectionName = "";
 	private Boolean persists = false;
-	//Mongo Instance
 	private Mongo mongo;
 	private DB db;
 	private DBCollection coll;
+	private String username = "";
+	private char[] password;
 	private Functions func = new Functions();
 	private MongoOptions opts = new MongoOptions();
 	private List<ServerAddress> addr = new ArrayList<ServerAddress>();
@@ -73,8 +74,12 @@ public class MongoDBCache implements Cache{
 				e.printStackTrace();
 			}
 			
+			this.username = caster.toString(arguments.get("username"));
+			this.password = caster.toString(arguments.get("password")).toCharArray();
+			
 			this.database = caster.toString(arguments.get("database"));
 			this.db = mongo.getDB(database);
+			this.db.authenticate(username,password);
 			this.collectionName = caster.toString(arguments.get("collection"));
 			this.coll = db.getCollection(collectionName);
 			this.persists = caster.toBoolean(arguments.get("persists"));

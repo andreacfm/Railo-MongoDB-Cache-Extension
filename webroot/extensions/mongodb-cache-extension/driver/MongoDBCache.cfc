@@ -15,6 +15,21 @@
 					type="text"
 				),
 
+			field(	displayName="Username",
+					name="username",
+					defaultValue="",
+					required=false,
+					description="",
+					type="text"
+				),
+			field(	displayName="Password",
+					name="password",
+					defaultValue="",
+					required=false,
+					description="",
+					type="text"
+				),
+
 			field(	displayName="Collection",
 					name="collection",
 					defaultValue="",
