@@ -28,7 +28,7 @@
 	</target>
 	
 	<target name="compressExtension" depends="replaceConfigVars">
-		<zip destfile="ext/MongoDBCache.zip" basedir="${project.extPath}">
+		<zip destfile="ext/mongodb-cache.zip" basedir="${project.extPath}">
 			<exclude name="**/src/**"/>
 			<exclude name="**/bin/**"/>			
 		</zip>
@@ -37,7 +37,7 @@
 
 	<target name="replaceConfigVars" depends="copyLibs">
 		<copy file="${project.extPath}/config.template.xml" tofile="${project.extPath}/config.xml" overwrite="true" />
-		<replace file="${project.extPath}/config.xml" token="{version}" value="1.${stamp.DSTAMP}${stamp.TSTAMP}" />
+		<replace file="${project.extPath}/config.xml" token="{version}" value="${version}.${stamp.DSTAMP}${stamp.TSTAMP}" />
 		<replace file="${project.extPath}/config.xml" token="{created}" value="${created.TODAY} ${created.TSTAMP}" />
 	</target>
 	
@@ -59,7 +59,7 @@
 		<javac srcdir="${project.extPath}/src">
 			 <classpath refid="master-classpath"/>
 		</javac>
-		<jar basedir="${project.extPath}/src" destfile="${project.extPath}/lib/MongoDBCache.jar" />
+		<jar basedir="${project.extPath}/src" destfile="${project.extPath}/lib/mongodb-cache.jar" />
 	</target>
 	
 	<target name="deleteArchives">

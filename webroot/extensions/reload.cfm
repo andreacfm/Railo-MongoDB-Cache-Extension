@@ -2,7 +2,7 @@
 <cfset exp="this extension is experimental and will no longer work with the final release of railo 3.1, it is not allowed to use this extension in a productve enviroment.">
 <cfset rootURL="http://#CGI.server_name#:#CGI.server_port#/extensions/">
 <cfset root="/extensions">
-<cfset zipFileLocation = 'ext/MongoDBCache.zip'>
+<cfset zipFileLocation = 'ext/mongodb-cache.zip'>
 
 <!--- Read Config --->
 <cffile action="read" file="zip://#expandPath(zipFileLocation)#!/config.xml" variable="config">
