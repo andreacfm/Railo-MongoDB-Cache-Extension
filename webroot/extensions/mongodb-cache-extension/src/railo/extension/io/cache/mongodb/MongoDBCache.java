@@ -46,6 +46,7 @@ public class MongoDBCache implements Cache{
 	private Functions func = new Functions();
 	private MongoOptions opts = new MongoOptions();
 	private List<ServerAddress> addr = new ArrayList<ServerAddress>();
+	private int maxRetry = 5;
 	
 	//counters
 	private int hits = 0;
@@ -165,12 +166,27 @@ public class MongoDBCache implements Cache{
 
 	@Override
 	public MongoDBCacheEntry getCacheEntry(String key) throws CacheException {
+		Integer attempts = 0;	
+		DBCursor cur = null;
 		BasicDBObject query = new BasicDBObject();
         query.put("key", key.toLowerCase());
         //if doc exists but is invalid flush it before read
         flushInvalid(query);
-        DBCursor cur = coll.find(query);
-        
+  
+		while(attempts <= maxRetry){
+			try{
+				cur = coll.find(query);
+				break;
+			}
+			catch(MongoException e){
+				attempts++;
+				if(attempts == maxRetry){
+					e.printStackTrace();
+				}
+			}
+								
+		}
+       
         if(cur.count() > 0){
     		hits++;
         	MongoDBCacheDocument doc = new MongoDBCacheDocument((BasicDBObject) cur.next());
@@ -328,7 +344,7 @@ public class MongoDBCache implements Cache{
 		query.put("key", key.toLowerCase());
 		DBCursor cur = coll.find(query);
 		if(cur.hasNext()){
-			coll.remove(cur.next());
+			doDelete(cur.next());
 			return true;
 		}
 		return false;
@@ -343,7 +359,7 @@ public class MongoDBCache implements Cache{
 			while(cur.hasNext()){
 				String key = new MongoDBCacheDocument((BasicDBObject) cur.next()).getKey(); 
 				if(filter.accept(key)){
-					coll.remove(cur.next());
+					doDelete(cur.next());
 					counter++;					
 				}
 			}
@@ -361,7 +377,7 @@ public class MongoDBCache implements Cache{
 			while(cur.hasNext()){
 				MongoDBCacheEntry entry = new MongoDBCacheEntry(new MongoDBCacheDocument((BasicDBObject) cur.next()));
 				if(filter.accept(entry)){
-					coll.remove(cur.next());
+					doDelete(cur.next());
 					counter++;					
 				}
 			}
@@ -437,14 +453,50 @@ public class MongoDBCache implements Cache{
 		return result;
 	}
 	
-	private void flushInvalid(BasicDBObject query){		
+	private void doDelete(DBObject obj){
+		Integer attempts = 0;
+
+		while(attempts <= maxRetry){
+			try{
+				//remove
+				coll.remove(obj);	
+				break;
+			}
+			catch(MongoException e){
+				attempts++;
+				if(attempts == maxRetry){
+					e.printStackTrace();
+				}
+			}
+								
+		}
+
+		
+	}
+	
+	private void flushInvalid(BasicDBObject query){
+		Integer attempts = 0;
+		DBCursor cur = null;
 		Long now = System.currentTimeMillis();
 		BasicDBObject q = (BasicDBObject) query.clone();
 		//add to the query the terms to check if the item/items are not valid. Anything returned must be flushed.
 		q.append("$where","this.expires > 0 && this.expires > " + now + " && this.timeIdle > 0 && this.timeIdle + this.lastAccessed > " + now);
 		
+		
 		//execute the query
-		DBCursor cur = coll.find(q);
+		while(attempts <= maxRetry){
+			try{
+				cur = coll.find(q);
+				break;
+			}
+			catch(MongoException e){
+				attempts++;
+				if(attempts == maxRetry){
+					e.printStackTrace();
+				}
+			}
+								
+		}
 		
 		System.out.println(cur.count());
 		if(cur.count() > 0){
@@ -457,6 +509,7 @@ public class MongoDBCache implements Cache{
 	}
 	
 	private void save(MongoDBCacheDocument doc){	
+		Integer attempts = 0;	
 		Long now = System.currentTimeMillis();
 		
 		doc.setLastAccessed(now.toString());
@@ -467,35 +520,121 @@ public class MongoDBCache implements Cache{
 		 *  If the doc do not exists is inserted.
 		 */
 		BasicDBObject q = new BasicDBObject("key",doc.getKey());
-		coll.update(q, doc.getDbObject(),true,false);
+		
+		while(attempts <= maxRetry){
+			try{
+				coll.update(q, doc.getDbObject(),true,false);
+				break;
+			}
+			catch(MongoException e){
+				attempts++;
+				if(attempts == maxRetry){
+					e.printStackTrace();
+				}
+			}
+								
+		}
+
 	}
 	
 	private DBCursor qAll(){
+		Integer attempts = 0;	
+		DBCursor cur = null;
+		
 		// remove invalid docs
 		flushInvalid(new BasicDBObject());
-		return coll.find();
+
+		while(attempts <= maxRetry){
+			try{
+				cur = coll.find();
+				break;
+			}
+			catch(MongoException e){
+				attempts++;
+				if(attempts == maxRetry){
+					e.printStackTrace();
+				}
+			}
+								
+		}
 		
+		return cur;
 	}
 
 	private DBCursor qAll_Keys(){	
+		Integer attempts = 0;
+		DBCursor cur = null;
+		
 		// remove invalid docs
 		flushInvalid(new BasicDBObject());
-		//get all entries but retrieve just the keys for better performance
-		return coll.find(new BasicDBObject().append("key",1));	
+
+		while(attempts <= maxRetry){
+			try{
+				//get all entries but retrieve just the keys for better performance
+				cur = coll.find(new BasicDBObject().append("key",1));
+				break;
+			}
+			catch(MongoException e){
+				attempts++;
+				if(attempts == maxRetry){
+					e.printStackTrace();
+				}
+			}
+								
+		}
+		
+		return 	cur;
 	}
 
 	private DBCursor qAll_Values(){
+		Integer attempts = 0;
+		DBCursor cur = null;
+
 		// remove invalid docs
 		flushInvalid(new BasicDBObject());
-		//get all entries but retrieve just the values for better performance
-		return coll.find(new BasicDBObject().append("data",1));	
+
+		while(attempts <= maxRetry){
+			try{
+				//get all entries but retrieve just the keys for better performance
+				cur = coll.find(new BasicDBObject().append("data",1));	
+				break;
+			}
+			catch(MongoException e){
+				attempts++;
+				if(attempts == maxRetry){
+					e.printStackTrace();
+				}
+			}
+								
+		}
+		
+		return 	cur;
 	}
 
 	private DBCursor qAll_Keys_Values(){
+		Integer attempts = 0;
+		DBCursor cur = null;
+
 		// remove invalid docs
 		flushInvalid(new BasicDBObject());
+
 		//get all entries but retrieve just the values for better performance
-		return coll.find(new BasicDBObject().append("data",1).append("data",1));	
+		while(attempts <= maxRetry){
+			try{
+				//get all entries but retrieve just the keys for better performance
+				cur = coll.find(new BasicDBObject().append("data",1).append("data",1));	
+				break;
+			}
+			catch(MongoException e){
+				attempts++;
+				if(attempts == maxRetry){
+					e.printStackTrace();
+				}
+			}
+								
+		}
+		
+		return 	cur;
 	}
 
 }
