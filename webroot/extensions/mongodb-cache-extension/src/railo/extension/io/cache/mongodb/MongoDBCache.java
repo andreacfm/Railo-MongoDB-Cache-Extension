@@ -498,7 +498,6 @@ public class MongoDBCache implements Cache{
 								
 		}
 		
-		System.out.println(cur.count());
 		if(cur.count() > 0){
 			while(cur.hasNext()){
 				DBObject doc = cur.next();
@@ -521,14 +520,16 @@ public class MongoDBCache implements Cache{
 		 */
 		BasicDBObject q = new BasicDBObject("key",doc.getKey());
 		
-		while(attempts <= maxRetry){
+		while(attempts < maxRetry){
 			try{
 				coll.update(q, doc.getDbObject(),true,false);
+				System.out.println("Save id " + doc.getKey() + " attempts " + attempts);
 				break;
 			}
-			catch(MongoException e){
+			catch(Exception e){
 				attempts++;
-				if(attempts == maxRetry){
+				System.out.println("Save id " + doc.getKey() + " error " + attempts);
+				if(attempts.equals(maxRetry)){
 					e.printStackTrace();
 				}
 			}

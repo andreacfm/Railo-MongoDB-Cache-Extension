@@ -15,6 +15,7 @@
 <cfcache action="put" id="susi" value="Susanne">
 <cfcache action="put" id="peter" value="Peter">
 <cf_valueEquals left="#cacheGet('susi')#" right="Susanne">
+<cfabort>
 
 <cfcache action="put" id="susi" value="Susanne">
 <cf_valueEquals left="#cacheKeyExists('susi')#" right="true">
