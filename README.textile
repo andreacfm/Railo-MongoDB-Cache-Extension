@@ -32,6 +32,7 @@ h4. Mongodb replica set config
 pre. mongod --replSet foo --port 27017 --dbpath /data/r0
  mongod --replSet foo --port 27018 --dbpath /data/r1
  mongod --replSet foo --port 27019 --dbpath /data/r2
+ mongod --replSet foo --port 27020 --dbpath /data/r3 
  > config = {_id: 'foo', members: [
                           {_id: 0, host: 'localhost:27017'},
                           {_id: 1, host: 'localhost:27018'},

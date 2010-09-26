@@ -46,7 +46,7 @@ public class MongoDBCache implements Cache{
 	private Functions func = new Functions();
 	private MongoOptions opts = new MongoOptions();
 	private List<ServerAddress> addr = new ArrayList<ServerAddress>();
-	private int maxRetry = 5;
+	private int maxRetry = 20;
 	
 	//counters
 	private int hits = 0;
@@ -83,7 +83,7 @@ public class MongoDBCache implements Cache{
 			this.db.authenticate(username,password);
 			this.collectionName = caster.toString(arguments.get("collection"));
 			this.coll = db.getCollection(collectionName);
-			this.persists = caster.toBoolean(arguments.get("persists"));
+			this.persists = caster.toBoolean(arguments.get("persist"));
 			
 			//clean the collection on startup if required
 			if(!persists){
@@ -225,14 +225,13 @@ public class MongoDBCache implements Cache{
 	}
 
 	@Override
-	public Object getValue(String key) throws CacheException {
+	public Object getValue(String key) throws IOException {
 		try{
 			MongoDBCacheEntry entry = getCacheEntry(key);
 			Object result = entry.getValue();
 			return  result;			
-		}catch(CacheException e){
-			e.printStackTrace();
-			return null;
+		}catch(IOException e){
+			throw(e);
 		}
 	}
 
@@ -241,7 +240,7 @@ public class MongoDBCache implements Cache{
 		try{
 			Object value = getValue(key.toLowerCase());
 			return value;	
-		}catch(CacheException e){
+		}catch(IOException e){
 			return defaultValue;
 		}
 	}
@@ -523,12 +522,10 @@ public class MongoDBCache implements Cache{
 		while(attempts < maxRetry){
 			try{
 				coll.update(q, doc.getDbObject(),true,false);
-				System.out.println("Save id " + doc.getKey() + " attempts " + attempts);
 				break;
 			}
 			catch(Exception e){
 				attempts++;
-				System.out.println("Save id " + doc.getKey() + " error " + attempts);
 				if(attempts.equals(maxRetry)){
 					e.printStackTrace();
 				}

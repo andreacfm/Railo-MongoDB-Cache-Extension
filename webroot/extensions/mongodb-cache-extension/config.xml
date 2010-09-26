@@ -2,12 +2,12 @@
 <config>
 	<info>
 		<id>10EEC23A-0779-4068-9507A9C5ED4A8699</id>
-		<version>1.0.201009132107</version>
+		<version>1.0.201009261353</version>
 		<name>MongoDbCache</name>
 		<type>server</type>
 		<label>MongoDb Cache</label>
 		<description>MongoDb Cache Extension</description>
-		<created>2010-September-13 21:07</created> 
+		<created>2010-September-26 13:53</created> 
 		<category>Core Extension</category>
 		<author>Andrea Campolonghi</author>
 	</info>
