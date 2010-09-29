@@ -29,8 +29,6 @@ import railo.extension.util.*;
 
 public class MongoDBCache implements Cache{
 
-	private String cacheName = "";
-	private String host = "";
 	private String database = "";
 	private String collectionName = "";
 	private Boolean persists = false;
@@ -49,19 +47,17 @@ public class MongoDBCache implements Cache{
 	private int misses = 0;
 	
 	public void init(String cacheName, Struct arguments) throws IOException {
-		this.cacheName = cacheName;
 		CFMLEngine engine = CFMLEngineFactory.getInstance();
 		Cast caster = engine.getCastUtil();
 	
 		try {
 			//options
 			opts.connectionsPerHost = caster.toIntValue(arguments.get("connectionsPerHost"));
+			
+			String[] hosts = caster.toString(arguments.get("hosts")).split("\\n");
 					
-			for(int i=1; i < 2; i++){
-				String host = "host" + i;
-				if(arguments.containsKey(host)){
-					addr.add(new ServerAddress(caster.toString(arguments.get(host))));
-				}
+			for(int i=0; i < hosts.length; i++){
+				addr.add(new ServerAddress(hosts[i]));
 			}
 			
 			//create mongo instance

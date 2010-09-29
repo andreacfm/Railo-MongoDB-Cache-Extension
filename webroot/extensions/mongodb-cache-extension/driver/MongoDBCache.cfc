@@ -1,11 +1,11 @@
 <cfcomponent extends="Cache">
     <cfset fields=array(
 			field(	displayName="Server Host",
-					name="host1",
+					name="hosts",
 					defaultValue="localhost:27017",
 					required=true,
-					description="The host that the MongoDB server is running on. Ex: localhost:27017 ",
-					type="text"
+					description="One or more MongoDB hosts (one per line). Use up to 7 hosts in a Replica Sets (MongoDb cluster environment)",
+					type="textarea"
 				),
 			field(	displayName="Database",
 					name="database",
@@ -53,54 +53,6 @@
 					required=true,
 					description="",
 					type="radio"
-				),								
-
-			field(	displayName="Replica Set 1",
-					name="host2",
-					defaultValue="",
-					required=false,
-					description="Replica set node Ex: localhost:27018",
-					type="text"
-				),								
-
-			field(	displayName="Replica Set 2",
-					name="host3",
-					defaultValue="",
-					required=false,
-					description="",
-					type="text"
-				),								
-
-			field(	displayName="Replica Set 3",
-					name="host4",
-					defaultValue="",
-					required=false,
-					description="",
-					type="text"
-				),								
-
-			field(	displayName="Replica Set 4",
-					name="host5",
-					defaultValue="",
-					required=false,
-					description="",
-					type="text"
-				),								
-
-			field(	displayName="Replica Set 5",
-					name="host6",
-					defaultValue="",
-					required=false,
-					description="",
-					type="text"
-				),								
-
-			field(	displayName="Replica Set 6",
-					name="host7",
-					defaultValue="",
-					required=false,
-					description="",
-					type="text"
 				)
 		)>
 
