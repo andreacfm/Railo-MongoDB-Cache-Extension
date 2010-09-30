@@ -37,6 +37,7 @@
         <cfset QuerySetCell(apps,'version',info.config.info.version.XMLtext)>
         <cfset QuerySetCell(apps,'category',info.config.info.category.XMLtext)>
 		<cfset QuerySetCell(apps,'author',info.config.info.author.XMLtext)>
+		<cfset QuerySetCell(apps,'image',info.config.info.image.XMLtext)>
 	</cffunction>
 
 </cfcomponent>
