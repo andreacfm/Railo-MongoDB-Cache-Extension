@@ -69,20 +69,23 @@ public class MongoDBCache implements Cache{
 			
 			this.username = caster.toString(arguments.get("username"));
 			this.password = caster.toString(arguments.get("password")).toCharArray();
+			this.persists = caster.toBoolean(arguments.get("persist"));
 			
 			this.database = caster.toString(arguments.get("database"));
 			this.db = mongo.getDB(database);
 			this.db.authenticate(username,password);
 			this.collectionName = caster.toString(arguments.get("collection"));
 			this.coll = db.getCollection(collectionName);
-			this.persists = caster.toBoolean(arguments.get("persist"));
-			
+									
 			//clean the collection on startup if required
 			if(!persists){
 				coll.drop();				
 			}
 			this.coll = db.getCollection(collectionName);
-			
+
+			// create the index on the 'key' element to speed reading up
+			coll.createIndex(new BasicDBObject("key", 1));
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
