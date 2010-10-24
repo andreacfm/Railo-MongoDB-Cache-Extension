@@ -465,7 +465,6 @@ public class MongoDBCache implements Cache{
 
 	
 	protected void flushInvalid(){
-		System.out.println("cleaned");
 		Integer attempts = 0;
 		DBCursor cur = null;
 		Long now = System.currentTimeMillis();
