@@ -3,6 +3,7 @@ package railo.extension.io.cache.mongodb;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
@@ -82,9 +83,13 @@ public class MongoDBCache implements Cache{
 				coll.drop();				
 			}
 			this.coll = db.getCollection(collectionName);
-
-			// create the index on the 'key' element to speed reading up
-			coll.createIndex(new BasicDBObject("key", 1));
+			
+			//create the indexes
+			crateIndexes();
+			
+			// start the cleaner schdule that remove entries by expires time and idle time
+			startCleaner();
+			
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -103,6 +108,19 @@ public class MongoDBCache implements Cache{
 		}
 	}
 
+	protected void crateIndexes(){
+		// create the indexes
+		coll.createIndex(new BasicDBObject("key", 1));
+		coll.createIndex(new BasicDBObject("lifeSpan", 1));
+		coll.createIndex(new BasicDBObject("timeIdle", 1));
+		coll.createIndex(new BasicDBObject("expires", 1));
+	}
+	
+	protected void startCleaner(){
+		Timer timer = new Timer();
+		timer.schedule(new MongoDbCleanTask(this), 0,2000);
+	}
+	
 	@Override
 	public boolean contains(String key) {
 		BasicDBObject query = new BasicDBObject();
@@ -165,10 +183,8 @@ public class MongoDBCache implements Cache{
 		DBCursor cur = null;
 		BasicDBObject query = new BasicDBObject();
         query.put("key", key.toLowerCase());
-        //if doc exists but is invalid flush it before read
-        flushInvalid(query);
-  
-		while(attempts <= maxRetry){
+
+        while(attempts <= maxRetry){
 			try{
 				cur = coll.find(query);
 				break;
@@ -446,6 +462,43 @@ public class MongoDBCache implements Cache{
 		
 		return result;
 	}
+
+	
+	protected void flushInvalid(){
+		System.out.println("cleaned");
+		Integer attempts = 0;
+		DBCursor cur = null;
+		Long now = System.currentTimeMillis();
+		BasicDBObject q = new BasicDBObject();
+		//add to the query the terms to check if the item/items are not valid. Anything returned must be flushed.
+		q.append("$where","this.expires > 0 && this.expires > " + now + " && this.timeIdle > 0 && this.timeIdle + this.lastAccessed > " + now);
+		
+		
+		//execute the query
+		while(attempts <= maxRetry){
+			try{
+				cur = coll.find(q);
+
+				if(cur.count() > 0){
+					while(cur.hasNext()){
+						DBObject doc = cur.next();
+						coll.remove(doc);
+					}						
+				}
+
+				break;
+			}
+			catch(MongoException e){
+				attempts++;
+				if(attempts == maxRetry){
+					e.printStackTrace();
+				}
+			}
+								
+		}
+		
+		
+	}
 	
 	private void doDelete(DBObject obj){
 		Integer attempts = 0;
@@ -467,40 +520,7 @@ public class MongoDBCache implements Cache{
 
 		
 	}
-	
-	private void flushInvalid(BasicDBObject query){
-		Integer attempts = 0;
-		DBCursor cur = null;
-		Long now = System.currentTimeMillis();
-		BasicDBObject q = (BasicDBObject) query.clone();
-		//add to the query the terms to check if the item/items are not valid. Anything returned must be flushed.
-		q.append("$where","this.expires > 0 && this.expires > " + now + " && this.timeIdle > 0 && this.timeIdle + this.lastAccessed > " + now);
 		
-		
-		//execute the query
-		while(attempts <= maxRetry){
-			try{
-				cur = coll.find(q);
-				break;
-			}
-			catch(MongoException e){
-				attempts++;
-				if(attempts == maxRetry){
-					e.printStackTrace();
-				}
-			}
-								
-		}
-		
-		if(cur.count() > 0){
-			while(cur.hasNext()){
-				DBObject doc = cur.next();
-				coll.remove(doc);
-			}						
-		}
-		
-	}
-	
 	private void save(MongoDBCacheDocument doc){	
 		Integer attempts = 0;	
 		Long now = System.currentTimeMillis();
@@ -533,9 +553,6 @@ public class MongoDBCache implements Cache{
 	private DBCursor qAll(){
 		Integer attempts = 0;	
 		DBCursor cur = null;
-		
-		// remove invalid docs
-		flushInvalid(new BasicDBObject());
 
 		while(attempts <= maxRetry){
 			try{
@@ -557,9 +574,6 @@ public class MongoDBCache implements Cache{
 	private DBCursor qAll_Keys(){	
 		Integer attempts = 0;
 		DBCursor cur = null;
-		
-		// remove invalid docs
-		flushInvalid(new BasicDBObject());
 
 		while(attempts <= maxRetry){
 			try{
@@ -583,9 +597,6 @@ public class MongoDBCache implements Cache{
 		Integer attempts = 0;
 		DBCursor cur = null;
 
-		// remove invalid docs
-		flushInvalid(new BasicDBObject());
-
 		while(attempts <= maxRetry){
 			try{
 				//get all entries but retrieve just the keys for better performance
@@ -607,9 +618,6 @@ public class MongoDBCache implements Cache{
 	private DBCursor qAll_Keys_Values(){
 		Integer attempts = 0;
 		DBCursor cur = null;
-
-		// remove invalid docs
-		flushInvalid(new BasicDBObject());
 
 		//get all entries but retrieve just the values for better performance
 		while(attempts <= maxRetry){
