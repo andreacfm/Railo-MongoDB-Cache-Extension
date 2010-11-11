@@ -3,7 +3,7 @@
 <cfset cacheName="mongotest">
 <cfset cacheClear()>
 	<cfset cachePut('abc','123')>
-    <cf_valueEquals left="#cacheCount()#" right="1">
+  	<cf_valueEquals left="#cacheCount()#" right="1">
     <cfset cacheClear()>
     <cf_valueEquals left="#cacheCount()#" right="0">
     
@@ -27,8 +27,7 @@
 
     <cf_valueEquals left="#cacheCount(cacheName)#" right="1">
 
-
-
 </cflock>
 
 </cfif>
+<cfabort>

@@ -260,8 +260,7 @@ public class MongoDBCache implements Cache{
 		
 		if(cur.count() > 0){
 			while(cur.hasNext()){
-				String key = new MongoDBCacheDocument((BasicDBObject) cur.next()).getKey(); 
-				result.add(key);
+				result.add(cur.next().get("key"));
 			}
 		}
 		return result;
@@ -357,13 +356,12 @@ public class MongoDBCache implements Cache{
 		DBCursor cur = qAll_Keys();
 		int counter = 0;
 		
-		if(cur.count() > 0){
-			while(cur.hasNext()){
-				String key = new MongoDBCacheDocument((BasicDBObject) cur.next()).getKey(); 
-				if(filter.accept(key)){
-					doDelete(cur.next());
-					counter++;					
-				}
+		while(cur.hasNext()){
+			DBObject obj = cur.next();
+			String key = (String)obj.get("key"); 
+			if(filter.accept(key)){
+				doDelete((BasicDBObject)obj);
+				counter++;					
 			}
 		}
 		
@@ -375,13 +373,12 @@ public class MongoDBCache implements Cache{
 		DBCursor cur = qAll();
 		int counter = 0;
 		
-		if(cur.count() > 0){
-			while(cur.hasNext()){
-				MongoDBCacheEntry entry = new MongoDBCacheEntry(new MongoDBCacheDocument((BasicDBObject) cur.next()));
-				if(filter.accept(entry)){
-					doDelete(cur.next());
-					counter++;					
-				}
+		while(cur.hasNext()){
+			BasicDBObject obj = (BasicDBObject) cur.next();
+			MongoDBCacheEntry entry = new MongoDBCacheEntry(new MongoDBCacheDocument(obj));
+			if(filter.accept(entry)){
+				doDelete(obj);
+				counter++;					
 			}
 		}
 		
@@ -393,14 +390,12 @@ public class MongoDBCache implements Cache{
 		DBCursor cur = qAll_Values();
 		List result = new ArrayList<Object>();
 		
-		if( cur.count() > 0 ){
-			while(cur.hasNext()){
-				Object value = new MongoDBCacheDocument((BasicDBObject) cur.next()).getData();
-				try{
-					result.add(func.evaluate(value));					
-				}catch(PageException e){
-					e.printStackTrace();
-				}
+		while(cur.hasNext()){
+			Object value = new MongoDBCacheDocument((BasicDBObject) cur.next()).getData();
+			try{
+				result.add(func.evaluate(value));					
+			}catch(PageException e){
+				e.printStackTrace();
 			}
 		}
 		
@@ -412,20 +407,19 @@ public class MongoDBCache implements Cache{
 		DBCursor cur = qAll_Keys_Values();
 		List result = new ArrayList<Object>();
 		
-		if( cur.count() > 0 ){
-			while(cur.hasNext()){
-				MongoDBCacheDocument doc = new MongoDBCacheDocument((BasicDBObject) cur.next());
+		while(cur.hasNext()){
+			BasicDBObject obj = (BasicDBObject) cur.next();
+			MongoDBCacheDocument doc = new MongoDBCacheDocument(obj);
 
-				if(filter.accept(doc.getKey())){
-					Object value = new MongoDBCacheDocument((BasicDBObject) cur.next()).getData();
-					try{
-						result.add(func.evaluate(value));					
-					}catch(PageException e){
-						e.printStackTrace();
-					}					
-				}
-				
+			if(filter.accept(doc.getKey())){
+				Object value = new MongoDBCacheDocument(obj).getData();
+				try{
+					result.add(func.evaluate(value));					
+				}catch(PageException e){
+					e.printStackTrace();
+				}					
 			}
+			
 		}
 		
 		return result;
@@ -436,20 +430,19 @@ public class MongoDBCache implements Cache{
 		DBCursor cur = qAll_Keys_Values();
 		List result = new ArrayList<Object>();
 		
-		if( cur.count() > 0 ){
-			while(cur.hasNext()){
-				MongoDBCacheEntry entry = new MongoDBCacheEntry(new MongoDBCacheDocument((BasicDBObject) cur.next()));
+		while(cur.hasNext()){
+			BasicDBObject obj = (BasicDBObject) cur.next();
+			MongoDBCacheEntry entry = new MongoDBCacheEntry(new MongoDBCacheDocument(obj));
 
-				if(filter.accept(entry)){
-					Object value = new MongoDBCacheDocument((BasicDBObject) cur.next()).getData();
-					try{
-						result.add(func.evaluate(value));					
-					}catch(PageException e){
-						e.printStackTrace();
-					}					
-				}
-				
+			if(filter.accept(entry)){
+				Object value = new MongoDBCacheDocument(obj).getData();
+				try{
+					result.add(func.evaluate(value));					
+				}catch(PageException e){
+					e.printStackTrace();
+				}					
 			}
+			
 		}
 		
 		return result;
@@ -569,7 +562,7 @@ public class MongoDBCache implements Cache{
 		while(attempts <= maxRetry){
 			try{
 				//get all entries but retrieve just the keys for better performance
-				cur = coll.find(new BasicDBObject().append("key",1));
+				cur = coll.find(new BasicDBObject(), new BasicDBObject("key",1));
 				break;
 			}
 			catch(MongoException e){
@@ -591,7 +584,7 @@ public class MongoDBCache implements Cache{
 		while(attempts <= maxRetry){
 			try{
 				//get all entries but retrieve just the keys for better performance
-				cur = coll.find(new BasicDBObject().append("data",1));	
+				cur = coll.find(new BasicDBObject(),new BasicDBObject("data",1));	
 				break;
 			}
 			catch(MongoException e){
@@ -614,7 +607,7 @@ public class MongoDBCache implements Cache{
 		while(attempts <= maxRetry){
 			try{
 				//get all entries but retrieve just the keys for better performance
-				cur = coll.find(new BasicDBObject().append("data",1).append("data",1));	
+				cur = coll.find(new BasicDBObject(),new BasicDBObject("key",1).append("data",1));	
 				break;
 			}
 			catch(MongoException e){
