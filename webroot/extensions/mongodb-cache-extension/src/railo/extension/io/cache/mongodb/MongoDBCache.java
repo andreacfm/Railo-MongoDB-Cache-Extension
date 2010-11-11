@@ -217,15 +217,7 @@ public class MongoDBCache implements Cache{
 			MongoDBCacheEntry entry = getCacheEntry(key);
 			return entry;
 		}catch(CacheException e){
-			MongoDBCacheDocument doc = new MongoDBCacheDocument(new BasicDBObject());
-			try{
-				if(defaultValue != null){
-					doc.setData(func.serialize(defaultValue.getValue()));					
-				}
-			}catch(PageException px){
-				return new MongoDBCacheEntry(doc);
-			}
-			return new MongoDBCacheEntry(doc);
+			return defaultValue;
 		}
 	}
 

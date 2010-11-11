@@ -46,6 +46,7 @@
 <cfcache action="get" id="peter" name="p" metadata="pmd">
 
 <cf_valueEquals left="#isDefined('s')#" right="true">
+
 <cf_valueEquals left="#isDefined('p')#" right="false">
 <cf_valueEquals left="#structCount(pmd)#" right="0">
 <cf_valueEquals left="#structCount(smd) GT 0#" right="true">
