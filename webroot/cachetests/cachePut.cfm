@@ -1,4 +1,5 @@
 <cfset server.enableCache=true>
+<cfset cacheClear()>
 
 <cflock scope="server" timeout="10">
 	<cfset cacheName="mongotest">
@@ -9,8 +10,8 @@
 	<cfset cachePut('ghi','_cachePut',CreateTimeSpan(0,0,0,0),CreateTimeSpan(0,0,0,0))>
     
     <cfset a=cacheGet('abc')>
-    <cfset b=cacheGet('def')>
-    <cfset c=cacheGet('ghi')>
+	<cfset b=cacheGet('def')>
+    <cfset c=cacheGet('ghi')>    
 
     <cf_valueEquals left="#structKeyExists(variables,'a')#" right="true">
     <cf_valueEquals left="#structKeyExists(variables,'b')#" right="true">

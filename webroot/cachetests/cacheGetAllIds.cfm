@@ -8,14 +8,14 @@
 	
 	<cfset cachePut('abc','123')>
 	<cfset cachePut('def','123')>
-    <cf_valueEquals left="#ListSort(arrayToList(cacheGetAllIds()),'textnocase')#" right="ABC,DEF" cs=true>
+    <cf_valueEquals left="#ListSort(arrayToList(cacheGetAllIds()),'textnocase')#" right="abc,def" cs=true>
     
 <cfif server.ColdFusion.ProductName EQ "railo"> 
 	<cfset cacheClear()>   
 	<cfset cachePut('abc','123')>
 	<cfset cachePut('abd','123')>
 	<cfset cachePut('def','123')>
-    <cf_valueEquals left="#ListSort(arrayToList(cacheGetAllIds("ab*")),'textnocase')#" right="ABC,ABD" cs=true>
-    <cf_valueEquals left="#ListSort(arrayToList(cacheGetAllIds("ab*")),'textnocase')#" right="ABC,ABD" cs=true>
+    <cf_valueEquals left="#ListSort(arrayToList(cacheGetAllIds("ab*")),'textnocase')#" right="abc,abd" cs=true>
+    <cf_valueEquals left="#ListSort(arrayToList(cacheGetAllIds("ab*")),'textnocase')#" right="abc,abd" cs=true>
 </cfif>
 </cflock>

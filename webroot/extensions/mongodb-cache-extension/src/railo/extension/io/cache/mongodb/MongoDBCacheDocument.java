@@ -29,7 +29,7 @@ public class MongoDBCacheDocument {
 		return dbObject.getString("key");
 	}
 
-	public void setCreatedOn(String value) {
+	public void setCreatedOn(int value) {
 		dbObject.put("createdOn",value);
 	}
 	
@@ -37,7 +37,7 @@ public class MongoDBCacheDocument {
 		return dbObject.getString("createdOn");
 	}
 
-	public void setLastAccessed(String value) {
+	public void setLastAccessed(int value) {
 		dbObject.put("lastAccessed",value);
 	}
 	
@@ -45,7 +45,7 @@ public class MongoDBCacheDocument {
 		return dbObject.getString("lastAccessed");
 	}
 
-	public void setLastUpdated(String value) {
+	public void setLastUpdated(int value) {
 		dbObject.put("lastUpdated",value);
 	}
 	
@@ -53,7 +53,7 @@ public class MongoDBCacheDocument {
 		return dbObject.getString("lastUpdated");
 	}
 	
-	public void setLifeSpan(String value) {
+	public void setLifeSpan(int value) {
 		dbObject.put("lifeSpan",value);
 	}
 	
@@ -61,7 +61,7 @@ public class MongoDBCacheDocument {
 		return dbObject.getString("lifeSpan");
 	}
 	
-	public void setTimeIdle(String value) {
+	public void setTimeIdle(int value) {
 		dbObject.put("timeIdle",value);
 	}
 	
@@ -78,7 +78,7 @@ public class MongoDBCacheDocument {
 		return hits;
 	}
 
-	public void setExpires(String value) {
+	public void setExpires(int value) {
 		dbObject.put("expires",value);
 	}
 	

@@ -88,7 +88,7 @@ public class MongoDBCache implements Cache{
 			crateIndexes();
 			
 			// start the cleaner schdule that remove entries by expires time and idle time
-			startCleaner();
+			//startCleaner();
 			
 
 		} catch (Exception e) {
@@ -118,7 +118,7 @@ public class MongoDBCache implements Cache{
 	
 	protected void startCleaner(){
 		Timer timer = new Timer();
-		timer.schedule(new MongoDbCleanTask(this), 0,2000);
+		timer.schedule(new MongoDbCleanTask(this), 0,10000);
 	}
 	
 	@Override
@@ -134,12 +134,11 @@ public class MongoDBCache implements Cache{
 		List result = new ArrayList<CacheEntry>();
 		DBCursor cur = qAll();
 		
-		if(cur.count() > 0){
-			while(cur.hasNext()){
-				MongoDBCacheDocument doc = new MongoDBCacheDocument((BasicDBObject) cur.next());
-				result.add(new MongoDBCacheEntry(doc));
-			}			
-		}
+		while(cur.hasNext()){
+			BasicDBObject obj = (BasicDBObject)cur.next();
+			MongoDBCacheDocument doc = new MongoDBCacheDocument(obj);
+			result.add(new MongoDBCacheEntry(doc));
+		}			
 		
 		return result;
 	}
@@ -149,14 +148,13 @@ public class MongoDBCache implements Cache{
 		List result = new ArrayList<CacheEntry>();
 		DBCursor cur = qAll();
 		
-		if(cur.count() > 0){
-			while(cur.hasNext()){
-				MongoDBCacheDocument doc = new MongoDBCacheDocument((BasicDBObject) cur.next());
-				if(filter.accept(doc.getKey())){
-					result.add(new MongoDBCacheEntry(doc));	
-				}
-			}			
-		}		
+		while(cur.hasNext()){
+			BasicDBObject obj = (BasicDBObject)cur.next();
+			MongoDBCacheDocument doc = new MongoDBCacheDocument(obj);
+			if(filter.accept(doc.getKey())){
+				result.add(new MongoDBCacheEntry(doc));	
+			}
+		}			
 		return result;
 	}
 
@@ -165,15 +163,14 @@ public class MongoDBCache implements Cache{
 		List result = new ArrayList<CacheEntry>();
 		DBCursor cur = qAll();
 		
-		if(cur.count() > 0){
-			while(cur.hasNext()){
-				MongoDBCacheDocument doc = new MongoDBCacheDocument((BasicDBObject) cur.next());
-				MongoDBCacheEntry entry = new MongoDBCacheEntry(doc);
-				if(filter.accept(entry)){
-					result.add(entry);	
-				}
-			}			
-		}		
+		while(cur.hasNext()){
+			BasicDBObject obj = (BasicDBObject)cur.next();
+			MongoDBCacheDocument doc = new MongoDBCacheDocument(obj);
+			MongoDBCacheEntry entry = new MongoDBCacheEntry(doc);
+			if(filter.accept(entry)){
+				result.add(entry);	
+			}
+		}			
 		return result;
 	}
 
@@ -181,9 +178,11 @@ public class MongoDBCache implements Cache{
 	public MongoDBCacheEntry getCacheEntry(String key) throws CacheException {
 		Integer attempts = 0;	
 		DBCursor cur = null;
-		BasicDBObject query = new BasicDBObject();
-        query.put("key", key.toLowerCase());
-
+		BasicDBObject query = new BasicDBObject("key", key.toLowerCase());
+		
+		// be sure to flush
+		flushInvalid(query);
+		
         while(attempts <= maxRetry){
 			try{
 				cur = coll.find(query);
@@ -305,28 +304,30 @@ public class MongoDBCache implements Cache{
 
 	@Override
 	public void put(String key, Object value, Long idleTime, Long lifeSpan) {
+		CFMLEngine engine = CFMLEngineFactory.getInstance();
+		Cast caster = engine.getCastUtil();
+		
 		Long created = System.currentTimeMillis();
-		long idle = idleTime==null?0:idleTime.longValue();
-		long life = lifeSpan==null?0:lifeSpan.longValue();
+		int create = created.intValue();
+		int idle = idleTime==null?0:idleTime.intValue();
+		int life = lifeSpan==null?0:lifeSpan.intValue();
 
 		BasicDBObject obj = new BasicDBObject();
 		MongoDBCacheDocument doc = new MongoDBCacheDocument(obj);
 		
 		try{
-			Long span = new Long(life).longValue();
-			Long timeIdle = new Long(idle).longValue();
-			
+
 			doc.setData(func.serialize(value));
-			doc.setCreatedOn(created.toString());
-			doc.setTimeIdle(timeIdle.toString());
-			doc.setLifeSpan(span.toString());
+			doc.setCreatedOn(create);
+			doc.setTimeIdle(idle);
+			doc.setLifeSpan(life);
 			doc.setHits(0);
 			
-			Long expires = span + created;
-			if(span == 0){
-				doc.setExpires(span.toString());				
+			int expires = life + create;
+			if(life == 0){
+				doc.setExpires(0);				
 			}else{
-				doc.setExpires(expires.toString());								
+				doc.setExpires(expires);								
 			}
 
 		}
@@ -449,26 +450,26 @@ public class MongoDBCache implements Cache{
 	}
 
 	
-	protected void flushInvalid(){
+	protected void flushInvalid(BasicDBObject query){
 		Integer attempts = 0;
 		DBCursor cur = null;
 		Long now = System.currentTimeMillis();
-		BasicDBObject q = new BasicDBObject();
-		//add to the query the terms to check if the item/items are not valid. Anything returned must be flushed.
-		q.append("$where","this.expires > 0 && this.expires > " + now + " && this.timeIdle > 0 && this.timeIdle + this.lastAccessed > " + now);
-		
-		
+		int nowi = now.intValue();
+		BasicDBObject q = (BasicDBObject)query.clone();
+				
 		//execute the query
 		while(attempts <= maxRetry){
 			try{
+				
+				//add to the query the terms to check if the item/items are not valid. Anything returned must be flushed.
+				q.append("$where","(this.expires != 0 && this.expires <= " + nowi + ") || (this.timeIdle != 0 && this.timeIdle + this.lastAccessed <= " + nowi + ")");
+
 				cur = coll.find(q);
 
-				if(cur.count() > 0){
-					while(cur.hasNext()){
-						DBObject doc = cur.next();
-						coll.remove(doc);
-					}						
-				}
+				while(cur.hasNext()){
+					DBObject doc = cur.next();
+					coll.remove(doc);
+				}						
 
 				break;
 			}
@@ -509,8 +510,8 @@ public class MongoDBCache implements Cache{
 		Integer attempts = 0;	
 		Long now = System.currentTimeMillis();
 		
-		doc.setLastAccessed(now.toString());
-		doc.setLastUpdated(now.toString());	
+		doc.setLastAccessed(now.intValue());
+		doc.setLastUpdated(now.intValue());	
 		doc.addHit();
 		/*
 		 *  very atomic updated. Just the changed values are sent to db.

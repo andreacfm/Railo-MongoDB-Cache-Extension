@@ -2,6 +2,8 @@ package railo.extension.io.cache.mongodb;
 
 import java.util.TimerTask;
 
+import com.mongodb.BasicDBObject;
+
 public class MongoDbCleanTask extends TimerTask {
 	
 	private MongoDBCache cache;
@@ -13,7 +15,7 @@ public class MongoDbCleanTask extends TimerTask {
 	@Override
 	public void run() {
 		try{
-			this.cache.flushInvalid();	
+			this.cache.flushInvalid(new BasicDBObject());	
 		}catch(Exception e){
 			//just fails so that task does not die
 		}

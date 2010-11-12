@@ -30,4 +30,3 @@
 </cflock>
 
 </cfif>
-<cfabort>
