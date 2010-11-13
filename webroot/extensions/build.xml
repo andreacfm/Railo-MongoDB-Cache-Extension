@@ -56,10 +56,10 @@
 			    <include name="*.jar"/>
 			  </fileset>	
 		</path>
-		<javac srcdir="${project.extPath}/src">
+		<javac srcdir="${project.extPath}/src" destdir="${project.extPath}/bin">
 			 <classpath refid="master-classpath"/>
 		</javac>
-		<jar basedir="${project.extPath}/src" destfile="${project.extPath}/lib/mongodb-cache.jar" />
+		<jar basedir="${project.extPath}/bin" destfile="${project.extPath}/lib/mongodb-cache.jar" />
 	</target>
 	
 	<target name="deleteArchives">

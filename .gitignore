@@ -16,6 +16,9 @@ webroot/WEB-INF/
 webroot/extensions/ext/*.zip
 webroot/extensions/output/*.*
 webroot/extensions/unames.xml
+webroot/extensions/ext
+webroot/extensions/mongodb-cache-extension/bin
+
 
 #extensions
 *.project
