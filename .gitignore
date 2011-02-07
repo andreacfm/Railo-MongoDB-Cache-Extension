@@ -26,3 +26,5 @@ webroot/extensions/mongodb-cache-extension/bin
 *.DS_Store
 *.classpath
 /.settings
+/.idea
+*.iml

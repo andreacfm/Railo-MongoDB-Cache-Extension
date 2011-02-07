@@ -23,27 +23,18 @@
         <cfargument name="path" type="string">
         <cfargument name="config" type="struct">
         
-        <cfif server.railo.version LT "3.1.1.017">
-        	<cfset error.common="to install this extension you need at least Railo version [3.1.1.017], the current version is [#server.railo.version#]">
-        <cfelseif hasExtension(variables.id)>
-        	<cfset error.common="You already have ""#variables.name#"" installed">
-		</cfif>
 
 		<cfloop list="#variables.jars#" index="i">
-			<cfadmin 
-            	action="updateJar"
-            	type="#request.adminType#"
-            	password="#session["password"&request.adminType]#"    
-            	jar="#path#lib/#i#">
+            <cffile
+            action="copy"
+            source="#path#lib/#i#"
+            destination="#getContextPath()#/lib/#i#">
 		</cfloop>
-            
 
-        <cfadmin 
-        	action="updateContext"
-            type="#request.adminType#"
-            password="#session["password"&request.adminType]#"
-            source="#path#driver/#variables.driver#"
-            destination="admin/cdriver/#variables.driver#">
+		<cffile
+		action="copy"
+		source="#path#driver/#variables.driver#"
+		destination="#getContextPath()#/context/admin/cdriver/#variables.driver#">
 
         <cfreturn '#variables.name# is now successfully installed'>
     
@@ -65,19 +56,17 @@
         <cfargument name="config" type="struct">
         
 		<cfloop list="#variables.jars#" index="i">
-			<cfadmin 
+			<cfadmin
 	            action="removeJar"
 	            type="#request.adminType#"
-	            password="#session["password"&request.adminType]#"    
+	            password="#session["password"&request.adminType]#"
 	            jar="#path#lib/#i#">
 		</cfloop>
 
-		<cfadmin 
-        	action="removeContext"
-            type="#request.adminType#"
-            password="#session["password"&request.adminType]#"
-            destination="admin/cdriver/#variables.driver#">
-        
+        <cffile
+        action="delete"
+        file="#getContextPath()#/context/admin/cdriver/#variables.driver#">
+
         <cfreturn '#variables.name# is now successfully removed'>
 		
     </cffunction>
@@ -97,5 +86,18 @@
          </cfloop>
          <cfreturn false>
     </cffunction>
-        
+
+    <cffunction name="getContextPath" access="private" returntype="string">
+
+        <cfswitch expression="#request.adminType#">
+            <cfcase value="web">
+                <cfreturn expandPath('{railo-web}') />
+            </cfcase>
+            <cfcase value="server">
+                <cfreturn expandPath('{railo-server}') />
+            </cfcase>
+        </cfswitch>
+
+    </cffunction>
+
 </cfcomponent>

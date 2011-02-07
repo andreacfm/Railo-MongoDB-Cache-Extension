@@ -4,7 +4,7 @@
 		<id>10EEC23A-0779-4068-9507A9C5ED4A8699</id>
 		<version>{version}</version>
 		<name>MongoDBCache</name>
-		<type>server</type>
+		<type>all</type>
 		<label>MongoDb Cache</label>
 		<description>MongoDb Cache Extension</description>
 		<created>{created}</created> 
