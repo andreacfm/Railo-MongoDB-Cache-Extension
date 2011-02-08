@@ -15,7 +15,7 @@ public class MongoDbCleanTask extends TimerTask {
 	@Override
 	public void run() {
 		try{
-			this.cache.flushInvalid();
+			this.cache.flushInvalid(new BasicDBObject());
 		}catch(Exception e){
 			//just fails so that task does not die
 		}
