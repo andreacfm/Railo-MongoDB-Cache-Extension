@@ -86,10 +86,9 @@ public class MongoDBCache implements Cache{
 			
 			//create the indexes
 			crateIndexes();
-			
+
 			// start the cleaner schdule that remove entries by expires time and idle time
-			//startCleaner();
-			
+			startCleaner();
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -181,7 +180,7 @@ public class MongoDBCache implements Cache{
 		BasicDBObject query = new BasicDBObject("key", key.toLowerCase());
 		
 		// be sure to flush
-		flushInvalid(query);
+		flushInvalid();
 		
         while(attempts <= maxRetry){
 			try{
@@ -450,28 +449,18 @@ public class MongoDBCache implements Cache{
 	}
 
 	
-	protected void flushInvalid(BasicDBObject query){
-		Integer attempts = 0;
-		DBCursor cur = null;
+	protected void flushInvalid(){
+		int attempts = 0;
 		Long now = System.currentTimeMillis();
 		int nowi = now.intValue();
-		BasicDBObject q = (BasicDBObject)query.clone();
-				
+
 		//execute the query
 		while(attempts <= maxRetry){
 			try{
-				
-				//add to the query the terms to check if the item/items are not valid. Anything returned must be flushed.
-				q.append("$where","(this.expires != 0 && this.expires <= " + nowi + ") || (this.timeIdle != 0 && this.timeIdle + this.lastAccessed <= " + nowi + ")");
 
-				cur = coll.find(q);
-
-				while(cur.hasNext()){
-					DBObject doc = cur.next();
-					coll.remove(doc);
-				}						
-
-				break;
+                BasicDBObject q = new BasicDBObject("expires", new BasicDBObject("$lt",nowi).append("$gt",0));
+				coll.remove(q);
+                break;
 			}
 			catch(MongoException e){
 				attempts++;
