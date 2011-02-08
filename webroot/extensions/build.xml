@@ -24,6 +24,19 @@
 
 	
 	<target name="updateExtension" depends="compressExtension">
+
+         <echo message="Deploying new lib"/>
+         <copy todir="${context_path}/lib" overwrite="true">
+             <fileset dir="${project.extPath}/lib" includes="*jar"/>
+         </copy>
+
+         <echo message="Deploying new driver"/>
+         <copy todir="${context_path}/context/admin/cdriver/" overwrite="true">
+             <fileset dir="${project.extPath}/driver" includes="*cfc"/>
+         </copy>
+
+
+         <echo message="restart railo"/>
 		<get src="http://localhost:8888/extensions/reload.cfm" dest="output/output.html" ignoreerrors="true" />
 	</target>
 	
