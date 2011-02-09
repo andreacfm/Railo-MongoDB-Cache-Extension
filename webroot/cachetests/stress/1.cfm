@@ -1,6 +1,7 @@
 <cfsetting requesttimeout="180">
 
 <cfset total = 0>
+<cfset cacheClear()>
 
 <cfloop from="1" to="10" index="j">
 	<cfset start = gettickcount()>

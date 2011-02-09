@@ -79,7 +79,7 @@ public class MongoDBCache implements Cache {
             crateIndexes();
 
             // start the cleaner schdule that remove entries by expires time and idle time
-            //startCleaner();
+            startCleaner();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -102,13 +102,13 @@ public class MongoDBCache implements Cache {
         // create the indexes
         coll.createIndex(new BasicDBObject("key", 1));
         coll.createIndex(new BasicDBObject("lifeSpan", 1));
-        coll.createIndex(new BasicDBObject("timeIdle", 1));
+        //coll.createIndex(new BasicDBObject("timeIdle", 1)); Idle is not supported from version 2
         coll.createIndex(new BasicDBObject("expires", 1));
     }
 
     protected void startCleaner() {
         Timer timer = new Timer();
-        timer.schedule(new MongoDbCleanTask(this), 0, 10000);
+        timer.schedule(new MongoDbCleanTask(this), 0, 100000);
     }
 
     @Override
@@ -286,7 +286,8 @@ public class MongoDBCache implements Cache {
 
         Long created = System.currentTimeMillis();
         int create = created.intValue();
-        int idle = idleTime == null ? 0 : idleTime.intValue();
+        //int idle = idleTime == null ? 0 : idleTime.intValue(); idle not supported since version 2
+        int idle = 0;
         int life = lifeSpan == null ? 0 : lifeSpan.intValue();
 
         BasicDBObject obj = new BasicDBObject();
@@ -432,13 +433,9 @@ public class MongoDBCache implements Cache {
         int nowi = now.intValue();
         BasicDBObject q = (BasicDBObject) query.clone();
 
-
         //execute the query
-        System.out.println(nowi);
         q.append("expires", new BasicDBObject("$lt", nowi).append("$gt", 0));
-        WriteResult wr = coll.remove(q);
-        System.out.println(wr.getLastError());
-
+        coll.remove(q);
 
     }
 
