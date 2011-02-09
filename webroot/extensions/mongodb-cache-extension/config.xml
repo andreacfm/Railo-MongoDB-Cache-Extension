@@ -2,12 +2,20 @@
 <config>
 	<info>
 		<id>10EEC23A-0779-4068-9507A9C5ED4A8699</id>
+<<<<<<< HEAD
 		<version>1.3.201102092204</version>
+=======
+		<version>1.2.201102082229</version>
+>>>>>>> c1fb22931d7f70359b3d610e60d4931e9c79f53a
 		<name>MongoDBCache</name>
 		<type>all</type>
 		<label>MongoDb Cache</label>
 		<description>MongoDb Cache Extension</description>
+<<<<<<< HEAD
 		<created>2011-February-9 22:04</created> 
+=======
+		<created>2011-February-8 22:29</created> 
+>>>>>>> c1fb22931d7f70359b3d610e60d4931e9c79f53a
 		<category>Core Extension</category>
 		<author>Andrea Campolonghi</author>
 		<image>http://preview.getrailo.org/logos/mongodb-logo.png</image>
