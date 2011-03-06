@@ -14,7 +14,7 @@
 	
 	<!-- Tests -->
 	<target name="runtests" depends="updateExtension">
-		<get src="http://localhost:8888/cachetests/index.cfm" dest="output/results.html" ignoreerrors="true" />
+		<get src="http://${server.name}:${server.port}/cachetests/index.cfm" dest="output/results.html" ignoreerrors="true" />
 	</target>
 	
 	<!-- Upload Extension to the local webserver -->
@@ -37,7 +37,7 @@
 
 
          <echo message="restart railo"/>
-		<get src="http://localhost:8888/reload.cfm" dest="output/output.html" ignoreerrors="true" />
+		<get src="http://${server.name}:${server.port}/reload.cfm" dest="output/output.html" ignoreerrors="false" />
 	</target>
 	
 	<target name="compressExtension" depends="replaceConfigVars">
@@ -75,7 +75,7 @@
         <javac srcdir="extension/src" destdir="extension/bin">
              <classpath refid="master-classpath"/>
         </javac>
-        <jar basedir="extension/bin" destfile="extension/lib/membase-cache.jar" />
+        <jar basedir="extension/bin" destfile="extension/lib/mongodb-cache.jar" />
     </target>
 	
 	<target name="deleteArchives">
