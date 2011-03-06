@@ -1,24 +1,8 @@
 #project
-License.txt
-install.txt
-agent/
-bin/
-contexts/
-etc/
-/lib/
-patches/
-server.xml
-start
-start.jar
-stop
-LICENSES/
-webroot/WEB-INF/
-webroot/extensions/ext/*.zip
-webroot/extensions/output/*.*
-webroot/extensions/unames.xml
-webroot/extensions/ext
-webroot/extensions/mongodb-cache-extension/bin
-
+ext/*.zip
+extension/output/*.*
+extension/bin/
+WEB-INF/
 
 #extensions
 *.project
@@ -26,5 +10,7 @@ webroot/extensions/mongodb-cache-extension/bin
 *.DS_Store
 *.classpath
 /.settings
-/.idea
+*.classpath
+*.project
 *.iml
+/.idea

@@ -37,7 +37,7 @@
 
 
          <echo message="restart railo"/>
-		<get src="http://localhost:8888/extensions/reload.cfm" dest="output/output.html" ignoreerrors="true" />
+		<get src="http://localhost:8888/reload.cfm" dest="output/output.html" ignoreerrors="true" />
 	</target>
 	
 	<target name="compressExtension" depends="replaceConfigVars">
@@ -60,20 +60,23 @@
 		</copy>
 	</target>
 	
-	<target name="createJar" depends="deleteArchives">
-		<path id="master-classpath">
-			<fileset dir="../../lib">
-				<include name="*.jar"/>
-			 </fileset>
-			 <fileset dir="lib/">
-			    <include name="*.jar"/>
-			  </fileset>	
-		</path>
-		<javac srcdir="${project.extPath}/src" destdir="${project.extPath}/bin">
-			 <classpath refid="master-classpath"/>
-		</javac>
-		<jar basedir="${project.extPath}/bin" destfile="${project.extPath}/lib/mongodb-cache.jar" />
-	</target>
+    <target name="createJar" depends="deleteArchives">
+        <path id="master-classpath">
+            <fileset dir="../../railo/">
+                <include name="*.jar"/>
+             </fileset>
+            <fileset dir="../../lib/">
+                <include name="*.jar"/>
+             </fileset>
+             <fileset dir="lib/">
+                <include name="*.jar"/>
+              </fileset>
+        </path>
+        <javac srcdir="extension/src" destdir="extension/bin">
+             <classpath refid="master-classpath"/>
+        </javac>
+        <jar basedir="extension/bin" destfile="extension/lib/membase-cache.jar" />
+    </target>
 	
 	<target name="deleteArchives">
 		<delete dir="${project.extPath}/lib/" includes="*.jar" />

@@ -1,15 +1,12 @@
 <cfsetting requesttimeout="180">
 
 <cfset total = 0>
-<cfset cacheClear()>
 
 <cfloop from="1" to="10" index="j">
 	<cfset start = gettickcount()>
 	<cfloop from="1" to="1000" index="i">
 		<cfcache action="put" id="a#i#" value="#i#">
 		<cfcache action="get" id="a#i#" name="v">
-		<cfcache action="put" id="b#i#" value="#{value = i}#">
-		<cfcache action="get" id="b#i#" name="v">
 	</cfloop>
 	<cfset end = gettickcount()>
 
