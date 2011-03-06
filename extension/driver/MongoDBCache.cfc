@@ -49,7 +49,7 @@
 			field(	displayName="Persists over server restart",
 					name="persist",
 					values="true,false",	
-					defaultValue=false,
+					defaultValue=true,
 					required=true,
 					description="",
 					type="radio"
