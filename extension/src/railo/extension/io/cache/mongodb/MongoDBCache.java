@@ -25,14 +25,7 @@ public class MongoDBCache implements Cache {
     private String database = "";
     private String collectionName = "";
     private Boolean persists = false;
-    private Mongo mongo;
-    private DB db;
-    private DBCollection coll;
-    private String username = "";
-    private char[] password;
     private Functions func = new Functions();
-    private MongoOptions opts = new MongoOptions();
-    private List<ServerAddress> addr = new ArrayList<ServerAddress>();
 
     //counters
     private int hits = 0;
@@ -43,37 +36,16 @@ public class MongoDBCache implements Cache {
         Cast caster = engine.getCastUtil();
 
         try {
-            //options
-            opts.connectionsPerHost = caster.toIntValue(arguments.get("connectionsPerHost"));
+            MongoConnection.init(arguments);
 
-            String[] hosts = caster.toString(arguments.get("hosts")).split("\\n");
-
-            for (int i = 0; i < hosts.length; i++) {
-                addr.add(new ServerAddress(hosts[i]));
-            }
-
-            //create mongo instance
-            try {
-                this.mongo = new Mongo(addr, opts);
-            } catch (MongoException e) {
-                e.printStackTrace();
-            }
-
-            this.username = caster.toString(arguments.get("username"));
-            this.password = caster.toString(arguments.get("password")).toCharArray();
             this.persists = caster.toBoolean(arguments.get("persist"));
-
             this.database = caster.toString(arguments.get("database"));
-            this.db = mongo.getDB(database);
-            this.db.authenticate(username, password);
             this.collectionName = caster.toString(arguments.get("collection"));
-            this.coll = db.getCollection(collectionName);
 
             //clean the collection on startup if required
             if (!persists) {
-                coll.drop();
+                getCollection().drop();
             }
-            this.coll = db.getCollection(collectionName);
 
             //create the indexes
             crateIndexes();
@@ -98,7 +70,16 @@ public class MongoDBCache implements Cache {
         }
     }
 
+    private DB getDb(){
+        return MongoConnection.getInstance() .getDB(this.database);
+    }
+
+    private DBCollection getCollection(){
+        return MongoConnection.getInstance() .getDB(this.database).getCollection(this.collectionName);
+    }
+
     protected void crateIndexes() {
+        DBCollection coll = getCollection();
         // create the indexes
         coll.createIndex(new BasicDBObject("key", 1));
         coll.createIndex(new BasicDBObject("lifeSpan", 1));
@@ -113,6 +94,7 @@ public class MongoDBCache implements Cache {
 
     @Override
     public boolean contains(String key) {
+        DBCollection coll = getCollection();
         BasicDBObject query = new BasicDBObject();
         query.put("key", key.toLowerCase());
         DBCursor cur = coll.find(query);
@@ -167,6 +149,7 @@ public class MongoDBCache implements Cache {
     @Override
     public MongoDBCacheEntry getCacheEntry(String key) throws CacheException {
         DBCursor cur = null;
+        DBCollection coll = getCollection();
         BasicDBObject query = new BasicDBObject("key", key.toLowerCase());
 
         // be sure to flush
@@ -319,6 +302,7 @@ public class MongoDBCache implements Cache {
 
     @Override
     public boolean remove(String key) {
+        DBCollection coll = getCollection();
         BasicDBObject query = new BasicDBObject();
         query.put("key", key.toLowerCase());
         DBCursor cur = coll.find(query);
@@ -428,6 +412,7 @@ public class MongoDBCache implements Cache {
 
 
     protected void flushInvalid(BasicDBObject query) {
+        DBCollection coll = getCollection();
         DBCursor cur = null;
         Long now = System.currentTimeMillis();
         int nowi = now.intValue();
@@ -440,10 +425,12 @@ public class MongoDBCache implements Cache {
     }
 
     private void doDelete(DBObject obj) {
+        DBCollection coll = getCollection();
         coll.remove(obj);
     }
 
     private void save(MongoDBCacheDocument doc) {
+        DBCollection coll = getCollection();
         Long now = System.currentTimeMillis();
 
         doc.setLastAccessed(now.intValue());
@@ -459,12 +446,14 @@ public class MongoDBCache implements Cache {
     }
 
     private DBCursor qAll() {
+        DBCollection coll = getCollection();
         DBCursor cur = null;
         cur = coll.find();
         return cur;
     }
 
     private DBCursor qAll_Keys() {
+        DBCollection coll = getCollection();
         Integer attempts = 0;
         DBCursor cur = null;
         //get all entries but retrieve just the keys for better performance
@@ -473,6 +462,7 @@ public class MongoDBCache implements Cache {
     }
 
     private DBCursor qAll_Values() {
+        DBCollection coll = getCollection();
         DBCursor cur = null;
         //get all entries but retrieve just the keys for better performance
         cur = coll.find(new BasicDBObject(), new BasicDBObject("data", 1));
@@ -480,6 +470,7 @@ public class MongoDBCache implements Cache {
     }
 
     private DBCursor qAll_Keys_Values() {
+        DBCollection coll = getCollection();
         DBCursor cur = null;
 
         //get all entries but retrieve just the keys for better performance
