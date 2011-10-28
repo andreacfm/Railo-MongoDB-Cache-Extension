@@ -20,7 +20,7 @@
     	<cfargument name="apps" type="query" required="yes">
         <cfset var exp="this extension is experimental and will no longer work with the final release of railo 3.1, it is not allowed to use this extension in a productve enviroment.">
         
-        <cfset var rootURL=getInfo().url & "/extensions/">
+        <cfset var rootURL=getInfo().url & "/">
         <cfset var zipFileLocation = 'ext/mongodb-cache.zip'>
 		
 		<cffile action="read" file="zip://#expandPath(zipFileLocation)#!/config.xml" variable="config">

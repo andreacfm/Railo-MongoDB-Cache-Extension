@@ -31,12 +31,18 @@
             destination="#getContextPath()#/lib/#i#">
 		</cfloop>
 
+		<cffile action="copy"
+		        source="#path#driver/#variables.driver#"
+		        destination="#expandPath('{railo-web}')#/context/admin/cdriver/" />
+
+        <!---
         <cfadmin
         	action="updateContext"
             type="#request.adminType#"
             password="#session["password"&request.adminType]#"
             source="#path#driver/#variables.driver#"
             destination="admin/cdriver/#variables.driver#">
+        --->
 
         <cfreturn '#variables.name# is now successfully installed'>
     
