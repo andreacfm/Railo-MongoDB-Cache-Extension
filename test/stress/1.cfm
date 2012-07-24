@@ -9,7 +9,7 @@
 		<cfcache action="get" id="a#i#" name="v">
 	</cfloop>
 	<cfset end = gettickcount()>
-
+    <cfset cacheClear()>
 	<cfset time = end -start>
 	<cfset total = total + time >
 	<cfoutput>#time/1000# s<br/></cfoutput>
@@ -17,4 +17,3 @@
 </cfloop>
 
 <cfoutput>Average sec: #(total/10)/1000#</cfoutput>
-<cfoutput>Average millis per operation : #100000/time#</cfoutput>
